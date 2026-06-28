@@ -1,0 +1,22 @@
+Cluster_Label,Connected_Classes,feature_csv
+0,"[1, 6, 8, 11]",Anchor_feature_parking\anchor_feature_0.csv
+1,"[0, 2]",Anchor_feature\anchor_feature_1.csv
+2,"[1, 3, 9]",Anchor_feature\anchor_feature_2.csv
+3,"[2, 15]",Anchor_feature_parking\anchor_feature_3.csv
+4,[5],Anchor_feature\anchor_feature_4.csv
+5,"[4, 6]",Anchor_feature\anchor_feature_5.csv
+6,"[0, 5]",Anchor_feature\anchor_feature_6.csv
+8,[0],Anchor_feature\anchor_feature_8.csv
+9,[2],Anchor_feature\anchor_feature_9.csv
+11,"[0, 12]",Anchor_feature_parking\anchor_feature_11.csv
+12,"[11, 13]",Anchor_feature_parking\anchor_feature_12.csv
+13,"[12, 14]",Anchor_feature_parking\anchor_feature_13.csv
+14,"[13, 15]",Anchor_feature_parking\anchor_feature_14.csv
+15,"[3, 14]",Anchor_feature_parking\anchor_feature_15.csv
+16,"[17, 18, 20]",Anchor_feature_parking\anchor_feature_16.csv
+17,"[16, 20]",Anchor_feature_parking\anchor_feature_17.csv
+18,[16],Anchor_feature_parking\anchor_feature_18.csv
+20,"[16, 17]",Anchor_feature_parking\anchor_feature_20.csv
+21,[22],Anchor_feature_parking\anchor_feature_21.csv
+22,"[21, 23]",Anchor_feature_parking\anchor_feature_22.csv
+23,[22],Anchor_feature_parking\anchor_feature_23.csv
