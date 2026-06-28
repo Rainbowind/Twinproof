@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 DEFAULT_ERROR_RATE = 0.30
+DATASET_NAME = "局部_小米MAX3"
 NODE_POOL = [f"{row}{col}" for row in "abcdef" for col in range(1, 7)]
 FIELDNAMES = ["Signal_Source", "Signal_Position", "Claim_Location", "Label_Location"]
 
@@ -45,6 +46,13 @@ def mutate_location(label_location):
     return claim_location
 
 
+def signal_source_from_file_name(file_name):
+    source_name = Path(file_name).stem
+    if source_name.endswith("_merged"):
+        source_name = source_name[:-len("_merged")]
+    return f"{DATASET_NAME}/{source_name}"
+
+
 def build_rows(input_path, error_rate):
     with input_path.open("r", encoding="utf-8-sig", newline="") as file:
         reader = csv.DictReader(file)
@@ -64,7 +72,7 @@ def build_rows(input_path, error_rate):
         claim_location = mutate_location(label_location) if index in error_indexes else list(label_location)
 
         rows.append({
-            "Signal_Source": source_row["File_Name"],
+            "Signal_Source": signal_source_from_file_name(source_row["File_Name"]),
             "Signal_Position": source_row["Anchor_Info"],
             "Claim_Location": json.dumps(claim_location, ensure_ascii=False),
             "Label_Location": json.dumps(label_location, ensure_ascii=False),
