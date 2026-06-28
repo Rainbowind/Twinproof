@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 
-TRUE_TRACE = ["e4", "e3", "d4", "d3", "c4", "d4", "e4"]
+TRUE_TRACE = ["e4", "e3", "e4", "e3","d3", "d4", "e4", "d4"]
 NODE_POOL = [f"{row}{col}" for row in "abcdef" for col in range(1, 7)]
 DEFAULT_ERROR_RATE = 0.30
 
@@ -111,8 +111,8 @@ def append_rows(output_path, rows):
 
 def main():
     claim_dir = Path(__file__).resolve().parent
-    default_data_dir = claim_dir.parent / "data" / "collectionData" / "局部_小米MAX3"
-    default_output = claim_dir / "claims.csv"
+    default_data_dir = claim_dir.parent / "data" / "collectionData" / "交叉_小米MAX3_移动卡"
+    default_output = claim_dir / "trace_claims.csv"
 
     parser = argparse.ArgumentParser(description="Generate claim samples from sensor csv files.")
     parser.add_argument("--data-dir", type=Path, default=default_data_dir)

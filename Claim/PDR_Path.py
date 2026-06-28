@@ -15,7 +15,7 @@ matplotlib.use('TkAgg')
 plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 # 最优 K 值
-BEST_K = 0.38
+BEST_K = 0.47
 # 0.47
 
 # 读取相关文件
@@ -23,7 +23,7 @@ BEST_K = 0.38
 # df = pd.read_csv(file_path)
 # Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_荟聚_华为_1.csv')
 # 读取相关文件
-file_path = "../data/collectionData/局部_小米MAX3/sensor_20230705_1306.csv"
+file_path = "../data/collectionData_new/HUAWEINova7_Path7/sensor_20260108_1718.csv"
 df = pd.read_csv(file_path)
 
 
