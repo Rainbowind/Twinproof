@@ -8,8 +8,6 @@ from scipy.signal import find_peaks, savgol_filter
 import matplotlib
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-import Data_processing
-import Ore_smooth
 
 matplotlib.use('TkAgg')
 
@@ -25,13 +23,8 @@ BEST_K = 0.38
 # df = pd.read_csv(file_path)
 # Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_荟聚_华为_1.csv')
 # 读取相关文件
-# file_path = "../data/collectionData/局部_小米MAX3/sensor_20230705_1306.csv"
-# df = pd.read_csv(file_path)
-# Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_局部_小米MAX3_refined.csv')
-# 读取相关文件
-file_path = "../data/collectionData_new_01/HUAWEI_Nova7_Path7/sensor_20251127_1055.csv"
+file_path = "../data/collectionData/局部_小米MAX3/sensor_20230705_1306.csv"
 df = pd.read_csv(file_path)
-Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_HUAWEI_Nova7_Path7_refined.csv')
 
 
 # 1.文件预处理
@@ -178,47 +171,12 @@ def correction_turn(turn_info):
     return turn_info
 
 
-# 8.寻找锚点间的路径
-def find_path_between_anchors(median_start_colum, turn_info, step_lengths):
-    paths = []
-
-    # 遍历每一对相邻的锚点
-    for i in range(len(median_start_colum) - 1):
-        A = median_start_colum[i]
-        B = median_start_colum[i + 1]
-
-        # 初始化路径，先存入起点和终点
-        path = [(i, i+1)]
-        last_position = A  # 记录当前路径的起始行位置
-        if_turn = 0  # 初始没有转向
-
-        for turn in turn_info:
-            if A < turn[1] < B:  # 只考虑在两个锚点之间的转弯
-                # 计算直行距离
-                distance = np.sum(step_lengths[last_position:turn[1]])  # 计算当前位置到转向点的行走距离
-                path.append((if_turn, int(round(distance))))  # 二元组（方向, 距离）
-                if_turn = turn[0]  # 更新当前的转向
-                last_position = turn[1]  # 更新转弯位置
-
-        # 如果最后一个锚点之间没有转向，直接计算直行到B点的距离
-        if last_position < B:
-            distance = np.sum(step_lengths[last_position:B])  # 计算最后一个锚点到B点的行走距离
-            path.append((if_turn, int(round(distance))))  # 二元组（方向, 距离）
-
-        paths.append(path)
-
-    return paths
-
-
 # 9.图示
-def show(path_ore, median_start_colum, turn_info, df):
+def show(path_ore, turn_info, df):
     # 绘制路径图
     plt.figure(figsize=(10, 8))
     # 路径
     plt.plot(path_ore[:, 0], path_ore[:, 1], '--', label='仅使用 Ore 重建路径', color='blue')
-    # 锚点
-    anchor_positions = path_ore[median_start_colum]  # 从路径中取出锚点位置
-    plt.plot(anchor_positions[:, 0], anchor_positions[:, 1], 'ro', markersize=8, label='锚点')
     # 转向点
     turn_positions = [path_ore[turn[1], :] for turn in turn_info]
     turn_positions = np.array(turn_positions)  # 转向点位置
@@ -230,7 +188,7 @@ def show(path_ore, median_start_colum, turn_info, df):
     # 图表设置
     plt.xlabel('X 坐标 (米)', fontsize=16)
     plt.ylabel('Y 坐标 (米)', fontsize=16)
-    plt.title('路径重建对比（带锚点和转向点）', fontsize=18)
+    plt.title('路径重建对比（带转向点）', fontsize=18)
     plt.legend(fontsize=14)
     plt.grid(True)
     plt.axis('equal')
@@ -248,7 +206,7 @@ def show(path_ore, median_start_colum, turn_info, df):
 
 
 # PDR算法复现路径
-def PDR(df,Anchor_data,If_show=True):
+def PDR(df,If_show=True):
     # 1.文件预处理
     df = preprocessing(df)
 
@@ -274,23 +232,18 @@ def PDR(df,Anchor_data,If_show=True):
     # 5.路径构建
     path_ore = reconstruct_path(step_lengths, step_angles_ore)
 
-    # 调用这些函数，可以得到路径
-    median_start_colum = find_anchor(Anchor_data, peaks)
 
     turn_info = get_turn(df, peaks)
     turn_info = correction_turn(turn_info)
-    print(median_start_colum)
     print(turn_info)
-    paths = find_path_between_anchors(median_start_colum, turn_info, step_lengths)
-    print(paths)
 
 
     if If_show==True:
-        # 画图展示拐弯和锚点
-        show(path_ore, median_start_colum, turn_info, df)
+        # 画图展示拐弯
+        show(path_ore, turn_info, df)
 
-    return median_start_colum,turn_info,paths
+    return turn_info
 
 
 # 调用PDR方法重建路径
-median_start_colum,turn_info,paths=PDR(df,Anchor_data,True)
+turn_info=PDR(df,True)
