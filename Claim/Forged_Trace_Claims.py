@@ -6,12 +6,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 
-# TRUE_TRACE = ["e4", "e3", "d4", "d3", "c4", "d4", "e4"]
-# TRUE_TRACE = ["e4", "e3", "e4", "e3", "d3" ,"d4", "d3" ,"e3", "e4", "d4"] 交叉小米max3移动
-# TRUE_TRACE = ["c3", "b3", "b2", "a2", "a1", "b1", "b2", "a2", "b2", "b3"]  path10
-TRUE_TRACE = ["e4", "e3", "d3", "d2", "c2", "b2", "b3", "c3", "d3", "c4", "d4", "e4"]
+TRUE_TRACE = ["e4", "e3", "e4", "e3","d3", "d4", "e4", "d4"]
 NODE_POOL = [f"{row}{col}" for row in "abcdef" for col in range(1, 7)]
-DEFAULT_ERROR_RATE = 0.30
+DEFAULT_TIME_ATTACK_RATE = 0.50
+ATTACK_TYPE = "forged_claim"
+FIELDNAMES = ["Claim_Path", "Claim_Time", "Claim_Trace", "Label_Time", "Label_Trace", "Attack_Type"]
 
 
 def parse_time(value):
@@ -67,27 +66,29 @@ def mutate_trace(label_trace):
         choices = [node for node in NODE_POOL if node != trace[index]]
         trace[index] = random.choice(choices)
 
+    if trace == label_trace:
+        return mutate_trace(label_trace)
     return trace
 
 
-def build_rows(data_dir, error_rate):
+def build_rows(data_dir, time_attack_rate):
     sensor_files = sorted(data_dir.glob("sensor*.csv"))
-    error_count = int(len(sensor_files) * error_rate)
-    error_indexes = set(random.sample(range(len(sensor_files)), error_count)) if error_count else set()
+    time_attack_count = int(len(sensor_files) * time_attack_rate)
+    time_attack_indexes = (
+        set(random.sample(range(len(sensor_files)), time_attack_count))
+        if time_attack_count
+        else set()
+    )
 
     rows = []
     for index, sensor_path in enumerate(sensor_files):
         label_time = duration_seconds(sensor_path)
         label_trace = list(TRUE_TRACE)
         claim_time = label_time
-        claim_trace = list(TRUE_TRACE)
+        claim_trace = mutate_trace(label_trace)
 
-        if index in error_indexes:
-            error_type = random.choice(["time", "trace", "both"])
-            if error_type in ("time", "both"):
-                claim_time = mutate_time(label_time)
-            if error_type in ("trace", "both"):
-                claim_trace = mutate_trace(label_trace)
+        if index in time_attack_indexes:
+            claim_time = mutate_time(label_time)
 
         rows.append({
             "Claim_Path": claim_path_from_sensor(sensor_path, data_dir),
@@ -95,18 +96,18 @@ def build_rows(data_dir, error_rate):
             "Claim_Trace": json.dumps(claim_trace, ensure_ascii=False),
             "Label_Time": label_time,
             "Label_Trace": json.dumps(label_trace, ensure_ascii=False),
+            "Attack_Type": ATTACK_TYPE,
         })
 
-    return rows
+    return rows, time_attack_count
 
 
 def append_rows(output_path, rows):
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = ["Claim_Path", "Claim_Time", "Claim_Trace", "Label_Time", "Label_Trace"]
     write_header = not output_path.exists() or output_path.stat().st_size == 0
 
     with output_path.open("a", encoding="utf-8-sig", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
         if write_header:
             writer.writeheader()
         writer.writerows(rows)
@@ -114,13 +115,13 @@ def append_rows(output_path, rows):
 
 def main():
     claim_dir = Path(__file__).resolve().parent
-    default_data_dir = claim_dir.parent / "data" / "collectionData_new" / "HUAWEINova7_Path7"
-    default_output = claim_dir / "claims.csv"
+    default_data_dir = claim_dir.parent / "data" / "collectionData" / "交叉_小米MAX3_移动卡"
+    default_output = claim_dir / "forged_trace_claims.csv"
 
-    parser = argparse.ArgumentParser(description="Generate claim samples from sensor csv files.")
+    parser = argparse.ArgumentParser(description="Generate forged trace claim attack samples.")
     parser.add_argument("--data-dir", type=Path, default=default_data_dir)
     parser.add_argument("--output", type=Path, default=default_output)
-    parser.add_argument("--error-rate", type=float, default=DEFAULT_ERROR_RATE)
+    parser.add_argument("--time-attack-rate", type=float, default=DEFAULT_TIME_ATTACK_RATE)
     parser.add_argument("--seed", type=int, default=None)
     args = parser.parse_args()
 
@@ -129,15 +130,15 @@ def main():
 
     if not args.data_dir.exists():
         raise FileNotFoundError(f"Data directory not found: {args.data_dir}")
-    if not 0 <= args.error_rate <= DEFAULT_ERROR_RATE:
-        raise ValueError(f"error-rate must be between 0 and {DEFAULT_ERROR_RATE}")
+    if not 0 <= args.time_attack_rate <= 1:
+        raise ValueError("time-attack-rate must be between 0 and 1")
 
-    rows = build_rows(args.data_dir, args.error_rate)
+    rows, time_attack_count = build_rows(args.data_dir, args.time_attack_rate)
     append_rows(args.output, rows)
 
-    error_limit = int(len(rows) * args.error_rate)
-    print(f"Appended {len(rows)} claims to {args.output}")
-    print(f"Generated at most {error_limit} wrong claims")
+    print(f"Appended {len(rows)} forged trace claims to {args.output}")
+    print(f"Mutated {len(rows)} Claim_Trace values")
+    print(f"Mutated {time_attack_count} Claim_Time values")
 
 
 if __name__ == "__main__":
