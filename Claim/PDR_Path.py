@@ -23,7 +23,7 @@ BEST_K = 0.47
 # df = pd.read_csv(file_path)
 # Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_荟聚_华为_1.csv')
 # 读取相关文件
-file_path = "../data/collectionData_new/HUAWEINova7_Path7/sensor_20260108_1718.csv"
+file_path = "../data/collectionData/交叉_小米MAX3_移动卡/sensor_20230628_1443.csv"
 df = pd.read_csv(file_path)
 
 
