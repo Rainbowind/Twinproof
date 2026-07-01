@@ -1,31 +1,31 @@
-Cluster_Label,Connected_Classes,feature_csv
-0,"[1, 9, 11]",Anchor_feature_parking\anchor_feature_0.csv
-1,"[0, 2]",Anchor_feature_parking\anchor_feature_1.csv
-2,"[1, 3]",Anchor_feature_parking\anchor_feature_2.csv
-3,"[2, 4]",Anchor_feature_parking\anchor_feature_3.csv
-4,"[3, 5, 11, 35]",Anchor_feature_parking\anchor_feature_4.csv
-5,[4],Anchor_feature_parking\anchor_feature_5.csv
-6,[7],Anchor_feature_parking\anchor_feature_6.csv
-7,"[6, 8]",Anchor_feature_parking\anchor_feature_7.csv
-8,"[7, 9]",Anchor_feature_parking\anchor_feature_8.csv
-9,"[0, 8]",Anchor_feature_parking\anchor_feature_9.csv
-11,"[0, 4, 12]",Anchor_feature_parking\anchor_feature_11.csv
-12,"[11, 31]",Anchor_feature_parking\anchor_feature_12.csv
-13,"[14, 18, 26]",Anchor_feature_parking\anchor_feature_13.csv
-14,"[13, 15]",Anchor_feature_parking\anchor_feature_14.csv
-15,"[14, 16]",Anchor_feature_parking\anchor_feature_15.csv
-16,"[15, 17]",Anchor_feature_parking\anchor_feature_16.csv
-17,"[16, 18]",Anchor_feature_parking\anchor_feature_17.csv
-18,"[13, 17, 29, 31, 33]",Anchor_feature_parking\anchor_feature_18.csv
-19,[20],Anchor_feature_parking\anchor_feature_19.csv
-20,"[19, 21]",Anchor_feature_parking\anchor_feature_20.csv
-21,"[20, 22]",Anchor_feature_parking\anchor_feature_21.csv
-22,"[21, 24, 26]",Anchor_feature_parking\anchor_feature_22.csv
-23,[24],Anchor_feature_parking\anchor_feature_23.csv
-24,"[22, 23]",Anchor_feature_parking\anchor_feature_24.csv
-26,"[13, 22]",Anchor_feature_parking\anchor_feature_26.csv
-29,[18],Anchor_feature_parking\anchor_feature_29.csv
-31,"[12, 18]",Anchor_feature_parking\anchor_feature_31.csv
-33,"[18, 34]",Anchor_feature_parking\anchor_feature_33.csv
-34,"[33, 35]",Anchor_feature_parking\anchor_feature_34.csv
-35,"[4, 34]",Anchor_feature_parking\anchor_feature_35.csv
+﻿Cluster_Label,Connected_Classes,feature_csv,Environment_Constraint
+0,"[1, 9, 11]",Anchor_feature_parking\anchor_feature_0.csv,d4
+1,"[0, 2]",Anchor_feature_parking\anchor_feature_1.csv,d4
+2,"[1, 3]",Anchor_feature_parking\anchor_feature_2.csv,c4
+3,"[2, 4]",Anchor_feature_parking\anchor_feature_3.csv,c4
+4,"[3, 5, 11, 35]",Anchor_feature_parking\anchor_feature_4.csv,d4
+5,[4],Anchor_feature_parking\anchor_feature_5.csv,d4
+6,[7],Anchor_feature_parking\anchor_feature_6.csv,e4
+7,"[6, 8]",Anchor_feature_parking\anchor_feature_7.csv,"e3,e4"
+8,"[7, 9]",Anchor_feature_parking\anchor_feature_8.csv,e3
+9,"[0, 8]",Anchor_feature_parking\anchor_feature_9.csv,"d4,e4"
+11,"[0, 4, 12]",Anchor_feature_parking\anchor_feature_11.csv,d4
+12,"[11, 31]",Anchor_feature_parking\anchor_feature_12.csv,"d4,e4"
+13,"[14, 18, 26]",Anchor_feature_parking\anchor_feature_13.csv,"b3,b4"
+14,"[13, 15]",Anchor_feature_parking\anchor_feature_14.csv,b2
+15,"[14, 16]",Anchor_feature_parking\anchor_feature_15.csv,"b3,b4"
+16,"[15, 17]",Anchor_feature_parking\anchor_feature_16.csv,"a4,b4"
+17,"[16, 18]",Anchor_feature_parking\anchor_feature_17.csv,a4
+18,"[13, 17, 29, 31, 33]",Anchor_feature_parking\anchor_feature_18.csv,b4
+19,[20],Anchor_feature_parking\anchor_feature_19.csv,d3
+20,"[19, 21]",Anchor_feature_parking\anchor_feature_20.csv,d2
+21,"[20, 22]",Anchor_feature_parking\anchor_feature_21.csv,c1
+22,"[21, 24, 26]",Anchor_feature_parking\anchor_feature_22.csv,"c3,d3"
+23,[24],Anchor_feature_parking\anchor_feature_23.csv,"c2,c3"
+24,"[22, 23]",Anchor_feature_parking\anchor_feature_24.csv,c3
+26,"[13, 22]",Anchor_feature_parking\anchor_feature_26.csv,c3
+29,[18],Anchor_feature_parking\anchor_feature_29.csv,d3
+31,"[12, 18]",Anchor_feature_parking\anchor_feature_31.csv,"d3,d4"
+33,"[18, 34]",Anchor_feature_parking\anchor_feature_33.csv,c5
+34,"[33, 35]",Anchor_feature_parking\anchor_feature_34.csv,c5
+35,"[4, 34]",Anchor_feature_parking\anchor_feature_35.csv,c6
