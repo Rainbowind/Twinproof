@@ -12,7 +12,7 @@ plt.rcParams['axes.unicode_minus'] = False  # 正确显示负号
 Anchor_path = "../path_reconstruction/Anchor_connection.csv"  # 替换为实际路径
 Paths_path = "../path_reconstruction/Paths.csv"  # 替换为实际路径
 
-
+# 读锚点连接关系，生成图结构
 def load_anchor_graph(anchor_connection_file):
     """加载锚点连接图"""
     df = pd.read_csv(anchor_connection_file)
@@ -52,7 +52,7 @@ def load_paths(paths_file):
     return edge_info
 
 
-
+# 算最短路径
 def dijkstra(graph, edge_info, start, end):
     """执行 Dijkstra 算法"""
     heap = [(0, start, [])]  # (累积距离, 当前节点, 路径)
