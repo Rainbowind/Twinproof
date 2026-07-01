@@ -25,13 +25,13 @@ BEST_K = 0.38
 # df = pd.read_csv(file_path)
 # Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_荟聚_华为_1.csv')
 # 读取相关文件
-# file_path = "../data/collectionData/局部_小米MAX3/sensor_20230705_1306.csv"
-# df = pd.read_csv(file_path)
-# Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_局部_小米MAX3_refined.csv')
-# 读取相关文件
-file_path = "../data/collectionData_new_01/HUAWEI_Nova7_Path7/sensor_20251127_1055.csv"
+file_path = "../data/collectionData/局部_小米MAX3/sensor_20230705_1306.csv"
 df = pd.read_csv(file_path)
-Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_HUAWEI_Nova7_Path7_refined.csv')
+Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_局部_小米MAX3_refined.csv')
+# 读取相关文件
+# file_path = "../data/collectionData/HUAWEI_Nova7_Path7/sensor_20251127_1055.csv"
+# df = pd.read_csv(file_path)
+# Anchor_data = pd.read_csv('../Find_Anchor/anchor_cluster/anchor_cluster_HUAWEI_Nova7_Path7_refined.csv')
 
 
 # 1.文件预处理
