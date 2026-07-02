@@ -242,6 +242,27 @@ def pad_to_window(values, pad_front=False):
     return np.pad(arr, (0, pad_width), constant_values=np.nan)
 
 
+def format_elapsed_time(seconds):
+    seconds = max(0, int(round(float(seconds))))
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    secs = seconds % 60
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+
+
+def anchor_mid_time(data, start, end):
+    mid_index = min(max((start + end) // 2, 0), len(data) - 1)
+    if "Time" not in data.columns:
+        return format_elapsed_time(mid_index)
+
+    times = pd.to_datetime(data["Time"], errors="coerce")
+    if times.isna().all() or pd.isna(times.iloc[mid_index]):
+        return format_elapsed_time(mid_index)
+
+    elapsed = (times.iloc[mid_index] - times.dropna().iloc[0]).total_seconds()
+    return format_elapsed_time(elapsed)
+
+
 def extract_anchor_feature_row(data, start, end, file_name):
     """Build one anchor-style feature row from a detected segment."""
     current = pad_to_window(data["Meg"].iloc[start:end], pad_front=False)
@@ -260,6 +281,7 @@ def extract_anchor_feature_row(data, start, end, file_name):
             row[f"Cell_ID_{cell}_{index + 1}"] = cell_id[index]
 
     row["File_Name"] = file_name
+    row["Mid_Time"] = anchor_mid_time(data, start, end)
     row["Anchor_Info"] = f"({start},{end})"
     return row
 
@@ -402,7 +424,7 @@ def build_global_anchor_table(claims_file, data_root, feature_dir, output_path, 
 def main():
     project_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description="Detect anchors from claim paths and match them to global anchor ids.")
-    parser.add_argument("--claims", type=Path, default=project_root / "claim" / "forged_trace_claims.csv")
+    parser.add_argument("--claims", type=Path, default=project_root / "Claim" / "forged_trace_claims.csv")
     parser.add_argument("--data-root", type=Path, default=project_root / "data" / "collectionData_02")
     parser.add_argument("--feature-dir", type=Path, default=project_root / "path_reconstruction" / "Anchor_feature_parking")
     parser.add_argument(
