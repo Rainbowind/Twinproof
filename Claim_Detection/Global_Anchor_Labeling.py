@@ -421,11 +421,49 @@ def build_global_anchor_table(claims_file, data_root, feature_dir, output_path, 
     return result
 
 
+def load_local_anchor_files(anchor_files):
+    rows = []
+    for anchor_file in anchor_files:
+        df = pd.read_csv(anchor_file, encoding="utf-8-sig")
+        missing = [column for column in FEATURE_COLUMNS if column not in df.columns]
+        if missing:
+            raise ValueError(f"{anchor_file} missing feature columns: {missing[:10]}")
+        rows.append(df)
+        print(f"[load] {anchor_file}: {len(df)} rows")
+
+    if not rows:
+        return pd.DataFrame(columns=FEATURE_COLUMNS)
+    return pd.concat(rows, ignore_index=True)
+
+
+def build_global_anchor_table_from_anchor_files(anchor_files, feature_dir, output_path, alpha, top_k, max_samples_per_anchor):
+    global_features, global_labels = load_global_rows(feature_dir, max_samples_per_anchor)
+    local_features = load_local_anchor_files(anchor_files)
+    if local_features.empty:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        local_features.to_csv(output_path, index=False, encoding="utf-8-sig")
+        return local_features
+
+    matches = match_local_to_global(global_features, global_labels, local_features, alpha, top_k)
+    result = pd.concat([local_features.reset_index(drop=True), matches], axis=1)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    result.to_csv(output_path, index=False, encoding="utf-8-sig")
+    return result
+
+
 def main():
     project_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description="Detect anchors from claim paths and match them to global anchor ids.")
     parser.add_argument("--claims", type=Path, default=project_root / "Claim" / "forged_trace_claims.csv")
     parser.add_argument("--data-root", type=Path, default=project_root / "data" / "collectionData_02")
+    parser.add_argument(
+        "--local-anchor-files",
+        type=Path,
+        nargs="+",
+        default=None,
+        help="Use existing anchor csv files directly instead of detecting anchors from Claim_Path.",
+    )
     parser.add_argument("--feature-dir", type=Path, default=project_root / "path_reconstruction" / "Anchor_feature_parking")
     parser.add_argument(
         "--output",
@@ -437,15 +475,25 @@ def main():
     parser.add_argument("--max-samples-per-anchor", type=int, default=30)
     args = parser.parse_args()
 
-    result = build_global_anchor_table(
-        claims_file=args.claims,
-        data_root=args.data_root,
-        feature_dir=args.feature_dir,
-        output_path=args.output,
-        alpha=args.alpha,
-        top_k=args.top_k,
-        max_samples_per_anchor=args.max_samples_per_anchor,
-    )
+    if args.local_anchor_files:
+        result = build_global_anchor_table_from_anchor_files(
+            anchor_files=args.local_anchor_files,
+            feature_dir=args.feature_dir,
+            output_path=args.output,
+            alpha=args.alpha,
+            top_k=args.top_k,
+            max_samples_per_anchor=args.max_samples_per_anchor,
+        )
+    else:
+        result = build_global_anchor_table(
+            claims_file=args.claims,
+            data_root=args.data_root,
+            feature_dir=args.feature_dir,
+            output_path=args.output,
+            alpha=args.alpha,
+            top_k=args.top_k,
+            max_samples_per_anchor=args.max_samples_per_anchor,
+        )
 
     print(f"Saved labeled anchor table to: {args.output}")
     if result.empty:

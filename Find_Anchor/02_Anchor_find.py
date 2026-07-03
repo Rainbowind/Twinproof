@@ -12,7 +12,7 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from datetime import timedelta
 
-folder_path = '../data/collectionData_02/局部_三星S7'
+folder_path = '../data/collectionData_new_02/荟聚001-0413'
 csv_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
 
 window_size = 400
@@ -224,7 +224,7 @@ segment_df = pd.DataFrame(all_segment_data, columns=columns)
 anchor_info_df = pd.DataFrame(anchor_points_info, columns=['File', 'Start_Index', 'End_Index'])
 segment_df['Anchor_Info'] = anchor_info_df.apply(lambda x: f"({x['Start_Index']},{x['End_Index']})", axis=1)
 
-output_file_path = 'anchor/anchor_combined_局部_三星S7.csv'
+output_file_path = 'anchor/anchor_combined_荟聚001-0413.csv'
 segment_df.to_csv(output_file_path, index=False)
 
 print(f"\n锚点段保存完成！文件路径：{output_file_path}")
