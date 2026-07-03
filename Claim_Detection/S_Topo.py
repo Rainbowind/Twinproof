@@ -205,20 +205,8 @@ def build_topology_scores(claims_file, anchor_table, connection_file, output_dir
 
     output_dir.mkdir(parents=True, exist_ok=True)
     scores_path = output_dir / "scores.csv"
-    summary_path = output_dir / "summary.csv"
     scores.to_csv(scores_path, index=False, encoding="utf-8-sig")
-
-    summary = pd.DataFrame([{
-        "Sample_Count": len(scores),
-        "Reachable_Count": int((scores["Reach_Flag"] == 1).sum()),
-        "Unreachable_Count": int((scores["Reach_Flag"] != 1).sum()),
-        "Mean_S_seq": scores["S_seq"].mean(),
-        "Mean_S_whole": scores["S_whole"].mean(),
-        "Mean_S_topo": scores["S_topo"].mean(),
-        "Median_S_topo": scores["S_topo"].median(),
-    }])
-    summary.to_csv(summary_path, index=False, encoding="utf-8-sig")
-    return scores, summary
+    return scores
 
 
 def main():
@@ -246,7 +234,7 @@ def main():
     args = parser.parse_args()
 
     anchor_table = args.anchor_table or find_default_anchor_table(args.anchor_dir)
-    scores, summary = build_topology_scores(
+    scores = build_topology_scores(
         claims_file=args.claims,
         anchor_table=anchor_table,
         connection_file=args.connection_file,
@@ -256,9 +244,7 @@ def main():
     )
 
     print(f"[done] wrote {args.output_dir / 'scores.csv'}")
-    print(f"[done] wrote {args.output_dir / 'summary.csv'}")
     print(f"[done] rows: {len(scores)}")
-    print(summary.to_string(index=False))
 
 
 if __name__ == "__main__":
