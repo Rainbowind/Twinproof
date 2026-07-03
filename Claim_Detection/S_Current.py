@@ -200,7 +200,7 @@ def topo_break_score(distance, threshold):
         return 0.0
     if distance <= threshold:
         return 1.0
-    return float(threshold / distance)
+    return float((threshold / distance) ** 2)
 
 
 def paired_signal_file(sensor_path):
@@ -222,6 +222,43 @@ def collect_trace_transplant_items(data_root, folder_markers):
                 "sensor_path": sensor_path,
                 "signal_path": paired_signal_file(sensor_path),
             })
+    return items
+
+
+def transplant_claim_path_to_file_name(claim_path):
+    parts = str(claim_path).strip().replace("\\", "/").split("/")
+    if len(parts) < 2:
+        raise ValueError(f"Invalid Claim_Path: {claim_path}")
+    folder = parts[0]
+    stem = parts[-1]
+    if stem.endswith(".csv"):
+        stem = stem[:-4]
+    if stem.startswith("sensor_"):
+        stem = stem[len("sensor_"):]
+    if stem.startswith("signal_"):
+        stem = stem[len("signal_"):]
+    return f"{folder}/sensor_{stem}.csv"
+
+
+def collect_trace_transplant_claim_items(claims_file, data_root):
+    claims = pd.read_csv(claims_file, encoding="utf-8-sig")
+    if "Claim_Path" not in claims.columns:
+        raise ValueError(f"{claims_file} missing Claim_Path column")
+
+    items = []
+    for claim_index, claim_path in enumerate(claims["Claim_Path"].astype(str)):
+        file_name = transplant_claim_path_to_file_name(claim_path)
+        folder, sensor_name = file_name.replace("\\", "/").split("/", 1)
+        sensor_path = data_root / folder / sensor_name
+        signal_path = sensor_path.with_name(sensor_name.replace("sensor_", "signal_", 1))
+        if not sensor_path.exists() or not signal_path.exists():
+            print(f"[skip] raw sensor/signal not found for claim row {claim_index}: {file_name}")
+            continue
+        items.append({
+            "file_name": file_name,
+            "sensor_path": sensor_path,
+            "signal_path": signal_path,
+        })
     return items
 
 
@@ -343,17 +380,19 @@ def calculate_current_scores(items, feature_dir, connection_file, seed, max_samp
         elif pd.isna(s_tail):
             s_post = s_random
         else:
-            s_post = 0.5 * s_random + 0.5 * s_tail
+            s_post = 0.2 * s_random + 0.8 * s_tail
 
         prev_node = match_lookup.get((sample_id, "previous"))
         curr_node = match_lookup.get((sample_id, "current"))
         distance = shortest_path_distance(graph, prev_node, curr_node) if prev_node is not None and curr_node is not None else None
         reach_flag = 1 if distance is not None else -1
-        s_path_break = topo_break_score(distance, TOPO_JUMP_THRESHOLD)
+        s_topo_jump = topo_break_score(distance, TOPO_JUMP_THRESHOLD)
 
         s_current = np.nan
-        if pd.notna(s_post):
-            s_current = 0.5 * s_post + 0.5 * s_path_break
+        if reach_flag == -1:
+            s_current = -1.0
+        elif pd.notna(s_post):
+            s_current = 0.8 * s_post + 0.2 * s_topo_jump
 
         rows.append({
             "file_name": meta["file_name"],
@@ -366,7 +405,7 @@ def calculate_current_scores(items, feature_dir, connection_file, seed, max_samp
             "Curr_Global_Anchor_ID": curr_node,
             "Reach_Flag": reach_flag,
             "Topo_Distance": distance if distance is not None else np.nan,
-            "S_path_break": round(float(s_path_break), 6),
+            "S_topo_jump": round(float(s_topo_jump), 6),
             "S_current": round(float(s_current), 6) if pd.notna(s_current) else np.nan,
         })
 
@@ -384,6 +423,7 @@ def main():
     )
     parser.add_argument("--transplant-root", type=Path, default=project_root / "data" / "collectionData_new")
     parser.add_argument("--transplant-folder-markers", nargs="+", default=["001-0413", "003-0413"])
+    parser.add_argument("--transplant-claims-file", type=Path, default=project_root / "Claim" / "transplant_trace_claims.csv")
     parser.add_argument("--claims-file", type=Path, default=project_root / "Claim" / "forged_trace_claims.csv")
     parser.add_argument("--raw-data-root", type=Path, default=project_root / "data" / "collectionData")
     parser.add_argument("--feature-dir", type=Path, default=project_root / "path_reconstruction" / "Anchor_feature_parking")
@@ -402,7 +442,7 @@ def main():
         )
         jobs.append((
             "trace_transplant",
-            collect_trace_transplant_items(args.transplant_root, args.transplant_folder_markers),
+            collect_trace_transplant_claim_items(args.transplant_claims_file, args.transplant_root),
             output,
         ))
 
