@@ -37,6 +37,19 @@ def unique_claim_paths(claims_file):
     return list(dict.fromkeys(claims["Claim_Path"].astype(str).tolist()))
 
 
+def iter_claim_paths(claims_file, unique=False):
+    claims = pd.read_csv(claims_file, encoding="utf-8-sig")
+    if "Claim_Path" not in claims.columns:
+        raise ValueError(f"{claims_file} missing Claim_Path column")
+
+    if unique:
+        for claim_path in unique_claim_paths(claims_file):
+            yield None, claim_path
+    else:
+        for claim_index, claim_path in enumerate(claims["Claim_Path"].astype(str)):
+            yield claim_index, claim_path
+
+
 def row_numeric(values, fill_value=0.0):
     series = pd.to_numeric(pd.Series(values), errors="coerce").astype(float)
     return series.ffill().bfill().fillna(fill_value).to_numpy()
@@ -309,9 +322,9 @@ def load_global_rows(feature_dir, max_samples_per_anchor):
     return pd.concat(rows, ignore_index=True), np.array(labels, dtype=int)
 
 
-def build_local_rows(claims_file, data_root):
+def build_local_rows(claims_file, data_root, unique=False):
     rows = []
-    for claim_path in unique_claim_paths(claims_file):
+    for claim_index, claim_path in iter_claim_paths(claims_file, unique=unique):
         merged_path = claim_path_to_merged_path(claim_path, data_root)
         if not merged_path.exists():
             print(f"[skip] merged file not found: {merged_path}")
@@ -319,10 +332,14 @@ def build_local_rows(claims_file, data_root):
 
         data = pd.read_csv(merged_path, encoding="utf-8-sig")
         segments = find_anchor_segments(data)
-        print(f"[anchors] {merged_path.name}: {segments}")
+        prefix = f"claim row {claim_index}" if claim_index is not None else "unique claim"
+        print(f"[anchors] {prefix} {merged_path.name}: {segments}")
 
         for start, end in segments:
-            rows.append(extract_anchor_feature_row(data, start, end, merged_path.name))
+            row = extract_anchor_feature_row(data, start, end, merged_path.name)
+            row["Claim_Row_Index"] = claim_index
+            row["Claim_Path"] = claim_path
+            rows.append(row)
     return pd.DataFrame(rows)
 
 
@@ -405,9 +422,9 @@ def match_local_to_global(global_features, global_labels, local_features, alpha,
     return pd.DataFrame(matches)
 
 
-def build_global_anchor_table(claims_file, data_root, feature_dir, output_path, alpha, top_k, max_samples_per_anchor):
+def build_global_anchor_table(claims_file, data_root, feature_dir, output_path, alpha, top_k, max_samples_per_anchor, unique=False):
     global_features, global_labels = load_global_rows(feature_dir, max_samples_per_anchor)
-    local_features = build_local_rows(claims_file, data_root)
+    local_features = build_local_rows(claims_file, data_root, unique=unique)
     if local_features.empty:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         local_features.to_csv(output_path, index=False, encoding="utf-8-sig")
@@ -473,6 +490,11 @@ def main():
     parser.add_argument("--alpha", type=float, default=0.3)
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--max-samples-per-anchor", type=int, default=30)
+    parser.add_argument(
+        "--unique-claim-paths",
+        action="store_true",
+        help="Deduplicate Claim_Path values before detecting anchors.",
+    )
     args = parser.parse_args()
 
     if args.local_anchor_files:
@@ -483,6 +505,7 @@ def main():
             alpha=args.alpha,
             top_k=args.top_k,
             max_samples_per_anchor=args.max_samples_per_anchor,
+            unique=args.unique_claim_paths,
         )
     else:
         result = build_global_anchor_table(
