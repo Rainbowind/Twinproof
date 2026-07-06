@@ -307,6 +307,46 @@ def collect_forged_trace_items(claims_file, raw_data_root):
     return items
 
 
+def replay_claim_path_to_stem(claim_path):
+    parts = str(claim_path).strip().replace("\\", "/").split("/")
+    if len(parts) < 2:
+        raise ValueError(f"Invalid Claim_Path: {claim_path}")
+    stem = parts[-1]
+    if stem.endswith(".csv"):
+        stem = stem[:-4]
+    if stem.startswith("sensor_"):
+        stem = stem[len("sensor_"):]
+    if stem.startswith("signal_"):
+        stem = stem[len("signal_"):]
+    if stem.endswith("_merged"):
+        stem = stem[:-7]
+    return stem
+
+
+def collect_replay_trace_items(claims_file, replay_folder):
+    claims = pd.read_csv(claims_file, encoding="utf-8-sig")
+    if "Claim_Path" not in claims.columns:
+        raise ValueError(f"{claims_file} missing Claim_Path column")
+
+    items = []
+    for claim_index, claim_path in enumerate(claims["Claim_Path"].astype(str)):
+        stem = replay_claim_path_to_stem(claim_path)
+        base_name = f"claim_{claim_index:03d}_{stem}"
+        sensor_path = replay_folder / f"sensor_{base_name}.csv"
+        signal_path = replay_folder / f"signal_{base_name}.csv"
+        file_name = f"{replay_folder.name}/sensor_{base_name}.csv"
+
+        if not sensor_path.exists() or not signal_path.exists():
+            print(f"[skip] replay sensor/signal not found for claim row {claim_index}: {file_name}")
+            continue
+        items.append({
+            "file_name": file_name,
+            "sensor_path": sensor_path,
+            "signal_path": signal_path,
+        })
+    return items
+
+
 def build_break_feature_rows(items, rng):
     metadata = []
     feature_rows = []
@@ -417,7 +457,7 @@ def main():
     parser = argparse.ArgumentParser(description="Calculate current validation scores.")
     parser.add_argument(
         "--mode",
-        choices=["trace_transplant", "forged_trace", "all"],
+        choices=["trace_transplant", "forged_trace", "replay_trace", "all"],
         default="all",
         help="Attack type to calculate. Default calculates both trace_transplant and forged_trace.",
     )
@@ -425,6 +465,12 @@ def main():
     parser.add_argument("--transplant-folder-markers", nargs="+", default=["001-0413", "003-0413"])
     parser.add_argument("--transplant-claims-file", type=Path, default=project_root / "Claim" / "transplant_trace_claims.csv")
     parser.add_argument("--claims-file", type=Path, default=project_root / "Claim" / "forged_trace_claims.csv")
+    parser.add_argument("--replay-claims-file", type=Path, default=project_root / "Claim" / "replay_trace_claims.csv")
+    parser.add_argument(
+        "--replay-folder",
+        type=Path,
+        default=project_root / "data" / "collectionData" / "交叉_小米MAX3_电信卡_last",
+    )
     parser.add_argument("--raw-data-root", type=Path, default=project_root / "data" / "collectionData")
     parser.add_argument("--feature-dir", type=Path, default=project_root / "path_reconstruction" / "Anchor_feature_parking")
     parser.add_argument("--connection-file", type=Path, default=project_root / "path_reconstruction" / "Anchor_connection.csv")
@@ -453,6 +499,16 @@ def main():
         jobs.append((
             "forged_trace",
             collect_forged_trace_items(args.claims_file, args.raw_data_root),
+            output,
+        ))
+
+    if args.mode in ("replay_trace", "all"):
+        output = args.output if args.output and args.mode == "replay_trace" else (
+            project_root / "Claim_Detection" / "results" / "current_validation" / "replay_trace" / "scores.csv"
+        )
+        jobs.append((
+            "replay_trace",
+            collect_replay_trace_items(args.replay_claims_file, args.replay_folder),
             output,
         ))
 
