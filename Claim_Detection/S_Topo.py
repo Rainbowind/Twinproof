@@ -142,14 +142,30 @@ def build_anchor_lookup(anchor_table):
     anchors = anchors.dropna(subset=["File_Name", "Global_Anchor_ID"]).copy()
     anchors["Global_Anchor_ID"] = anchors["Global_Anchor_ID"].astype(int)
     lookup = {}
+    if "Claim_Row_Index" in anchors.columns:
+        anchors = anchors.dropna(subset=["Claim_Row_Index"]).copy()
+        anchors["Claim_Row_Index"] = anchors["Claim_Row_Index"].astype(int)
+        for claim_index, group in anchors.groupby("Claim_Row_Index", sort=False):
+            lookup[int(claim_index)] = {
+                "matched_file_name": str(group["File_Name"].iloc[0]),
+                "nodes": group["Global_Anchor_ID"].tolist(),
+            }
+        return lookup, "claim_row_index"
+
     for file_name, group in anchors.groupby("File_Name", sort=False):
-        lookup[str(file_name)] = group["Global_Anchor_ID"].tolist()
-    return lookup
+        lookup[str(file_name)] = {
+            "matched_file_name": str(file_name),
+            "nodes": group["Global_Anchor_ID"].tolist(),
+        }
+    return lookup, "file_name"
 
 
-def score_one_claim(row, anchor_lookup, graph, node_regions, w_seq, w_whole):
+def score_one_claim(claim_index, row, anchor_lookup, lookup_mode, graph, node_regions, w_seq, w_whole):
     matched_file_name = claim_path_to_file_name(row["Claim_Path"])
-    detected_nodes = anchor_lookup.get(matched_file_name, [])
+    lookup_key = claim_index if lookup_mode == "claim_row_index" else matched_file_name
+    anchor_entry = anchor_lookup.get(lookup_key, {})
+    detected_nodes = anchor_entry.get("nodes", [])
+    matched_file_name = anchor_entry.get("matched_file_name", matched_file_name)
     reachable_path, reachable = expand_reachable_path(detected_nodes, graph)
     detected_regions = regions_for_path(reachable_path, node_regions)
     claim_trace = parse_list(row["Claim_Trace"])
@@ -194,12 +210,12 @@ def score_one_claim(row, anchor_lookup, graph, node_regions, w_seq, w_whole):
 
 def build_topology_scores(claims_file, anchor_table, connection_file, output_dir, w_seq, w_whole):
     claims = pd.read_csv(claims_file, encoding="utf-8-sig")
-    anchor_lookup = build_anchor_lookup(anchor_table)
+    anchor_lookup, lookup_mode = build_anchor_lookup(anchor_table)
     graph, node_regions = load_topology(connection_file)
 
     rows = [
-        score_one_claim(row, anchor_lookup, graph, node_regions, w_seq, w_whole)
-        for _, row in claims.iterrows()
+        score_one_claim(claim_index, row, anchor_lookup, lookup_mode, graph, node_regions, w_seq, w_whole)
+        for claim_index, row in claims.iterrows()
     ]
     scores = pd.DataFrame(rows)
 
