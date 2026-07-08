@@ -10,7 +10,7 @@ ATTACKS = [
     ("replay_trace", "重放"),
     ("trace_transplant", "移植"),
 ]
-DEFAULT_THRESHOLDS = [0.55, 0.60, 0.65, 0.70, 0.75, 0.80]
+DEFAULT_THRESHOLDS = [0.77, 0.78, 0.79, 0.80, 0.81, 0.82]
 DEFAULT_WEIGHTS = {
     "S_topo": 0.40,
     "S_curr": 0.30,
