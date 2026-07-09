@@ -10,14 +10,14 @@ matplotlib.use("TkAgg")
 
 # ===================== Raw data =====================
 attack_labels = ["Forged", "Replay", "Proxy", "Trans."]
-method_labels = ["Fingerprint", "Rule", "Learning", "Twinproof"]
+method_labels = ["w/o Time", "w/o Signal", "w/o Current", "w/o Topology"]
 
 far_values = np.array(
     [
-        [7.26, 31.70, 18.26, 19.15],
-        [12.77, 23.04, 17.61, 16.96],
-        [9.09, 29.46, 25.27, 19.79],
-        [2.61, 7.14, 3.62, 3.13],
+        [7.85, 7.94, 4.92, 4.71],
+        [3.92, 9.66, 10.73, 7.46],
+        [5.56, 18.58, 15.01, 6.96],
+        [8.47, 9.16, 8.53, 10.32],
     ]
 )
 
@@ -100,8 +100,8 @@ ax.set_xticklabels(attack_labels)
 
 ax.set_ylabel("FAR (%)", labelpad=1)
 
-ax.set_ylim(0, 40)
-ax.set_yticks([0, 10, 20, 30, 40])
+ax.set_ylim(0, 20)
+ax.set_yticks([0, 5, 10, 15, 20])
 
 ax.tick_params(axis="both", pad=1, width=0.5, length=2)
 
