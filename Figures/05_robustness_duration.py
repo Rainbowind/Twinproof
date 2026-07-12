@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -9,37 +9,33 @@ from matplotlib.patches import Patch
 matplotlib.use("Agg")
 
 # ===================== Raw data =====================
-category_labels = ["4s", "8s", "20s", "40s"]
 attack_labels = ["Forged", "Replay", "Proxy", "Trans."]
+method_labels = ["Long-term", "Short-term"]
 
 far_values = np.array(
     [
-        [7.34, 5.21, 2.86, 1.74],
-        [6.21, 4.32, 2.16, 1.26],
-        [2.61, 7.14, 3.62, 3.13],
-        [2.43, 6.58, 3.31, 2.96],
+        [2.61, 4.32],
+        [7.14, 6.21],
+        [3.62, 2.16],
+        [3.13, 1.26],
     ]
 )
 
-# ===================== Blue gradient =====================
+# ===================== Blue gradient + texture =====================
 colors = [
     "#4874CB",
-    "#7FA6E6",
     "#BCD3F5",
-    "#FFFFFF",
 ]
 
 hatches = [
     "",
-    "//",
-    "\\\\\\\\",
-    "",
+    "/////",
 ]
 
 # ===================== Figure size: cm to inch =====================
 cm_to_in = 1 / 2.54
-fig_w = 8.4 * cm_to_in
-fig_h = 5.0 * cm_to_in
+fig_w = 4.1 * cm_to_in
+fig_h = 2.5 * cm_to_in
 
 plt.rcParams.update(
     {
@@ -58,26 +54,40 @@ fig.patch.set_facecolor("white")
 ax.set_facecolor("white")
 
 # ===================== Bar layout =====================
-x = np.arange(len(category_labels))
-bar_w = 0.15
-offsets = (np.arange(len(attack_labels)) - (len(attack_labels) - 1) / 2) * bar_w
+bar_w = 0.08
+cluster_gap = 0.22
 
-for i, label in enumerate(attack_labels):
-    ax.bar(
-        x + offsets[i],
-        far_values[:, i],
-        width=bar_w,
-        color=colors[i],
-        edgecolor="black",
-        linewidth=0.3,
-        hatch=hatches[i],
-        label=label,
-        align="center",
-    )
+group_xs = []
+start = 0.0
+for _ in attack_labels:
+    xs = start + np.array([0, 1]) * bar_w
+    group_xs.append(xs)
+    start = xs[-1] + bar_w + cluster_gap
+
+
+def draw_group(xs, values):
+    for i, x in enumerate(xs):
+        ax.bar(
+            x,
+            values[i],
+            width=bar_w,
+            color=colors[i],
+            edgecolor="black",
+            linewidth=0.3,
+            hatch=hatches[i],
+            align="center",
+        )
+
+
+for attack_index, xs in enumerate(group_xs):
+    draw_group(xs, far_values[attack_index])
 
 # ===================== Axes =====================
-ax.set_xticks(x)
-ax.set_xticklabels(category_labels)
+group_centers = [np.mean(xs) for xs in group_xs]
+
+ax.set_xticks(group_centers)
+ax.set_xticklabels(attack_labels)
+
 ax.set_ylabel("FAR (%)", labelpad=1)
 
 ax.set_ylim(0, 8)
@@ -91,14 +101,14 @@ for sp in ["left", "right", "top", "bottom"]:
 
 # ===================== Legend =====================
 legend_handles = [
-    Patch(facecolor=colors[i], edgecolor="black", linewidth=0.3, hatch=hatches[i], label=attack_labels[i])
-    for i in range(len(attack_labels))
+    Patch(facecolor=colors[0], edgecolor="black", linewidth=0.3, hatch=hatches[0], label=method_labels[0]),
+    Patch(facecolor=colors[1], edgecolor="black", linewidth=0.3, hatch=hatches[1], label=method_labels[1]),
 ]
 
 legend = ax.legend(
     handles=legend_handles,
     loc="upper right",
-    ncol=2,
+    ncol=1,
     frameon=True,
     borderpad=0.18,
     handlelength=1.0,
@@ -116,14 +126,13 @@ frame.set_linewidth(0.0)
 
 # ===================== Layout =====================
 plt.subplots_adjust(
-    left=0.12,
-    right=0.98,
-    bottom=0.17,
-    top=0.96,
+    left=0.2,
+    right=0.95,
+    bottom=0.15,
+    top=0.95,
 )
 
 # ===================== Export =====================
 output_path = Path(__file__).with_suffix(".pdf")
 plt.savefig(output_path, format="pdf")
 plt.close(fig)
-
