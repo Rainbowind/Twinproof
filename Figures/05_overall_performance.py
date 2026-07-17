@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-matplotlib.use("TkAgg")
+matplotlib.use("Agg")
 
 # ===================== Raw data =====================
 frr_values = np.array([1, 2, 3, 4, 5, 6])
@@ -49,8 +49,8 @@ line_styles = {
 
 # ===================== Figure size: cm to inch =====================
 cm_to_in = 1 / 2.54
-fig_w = 8.4 * cm_to_in
-fig_h = 5.0 * cm_to_in
+fig_w = 4.1 * cm_to_in
+fig_h = 2.5 * cm_to_in
 
 plt.rcParams.update(
     {
@@ -102,32 +102,46 @@ for sp in ["left", "right", "top", "bottom"]:
     ax.spines[sp].set_linewidth(0.6)
 
 # ===================== Legend =====================
+handles, labels = ax.get_legend_handles_labels()
+handle_map = dict(zip(labels, handles))
+legend_handles = [
+    handle_map["Forged"],
+    handle_map["Replay"],
+    handle_map["Proxy"],
+    handle_map["Trans."],
+    handle_map["Overall"],
+]
+legend_labels = ["Forged", "Replay", "Proxy", "Trans.", "Overall"]
+
 legend = ax.legend(
+    legend_handles,
+    legend_labels,
     loc="upper right",
-    ncol=1,
+    ncol=2,
     frameon=True,
     borderpad=0.25,
-    handlelength=2.2,
-    handletextpad=0.45,
-    labelspacing=0.25,
-    bbox_to_anchor=(0.99, 0.99),
+    handlelength=1.4,
+    handletextpad=0.35,
+    columnspacing=0.55,
+    labelspacing=0.18,
+    bbox_to_anchor=(1.01, 1.03),
 )
 
 frame = legend.get_frame()
 frame.set_facecolor("white")
-frame.set_alpha(0.8)
+frame.set_alpha(0.65)
 frame.set_edgecolor("none")
 frame.set_linewidth(0.0)
 
 # ===================== Layout =====================
 plt.subplots_adjust(
-    left=0.14,
-    right=0.97,
-    bottom=0.17,
-    top=0.96,
+    left=0.20,
+    right=0.95,
+    bottom=0.26,
+    top=0.95,
 )
 
 # ===================== Export =====================
 output_path = Path(__file__).with_suffix(".pdf")
 plt.savefig(output_path, format="pdf")
-plt.show()
+plt.close(fig)

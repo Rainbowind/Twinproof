@@ -19,10 +19,10 @@ fig_h = 5.0 * cm_to_in
 
 plt.rcParams.update(
     {
-        "font.size": 6,
-        "axes.labelsize": 6,
-        "xtick.labelsize": 6,
-        "ytick.labelsize": 6,
+        "font.size": 12,
+        "axes.labelsize": 12,
+        "xtick.labelsize": 12,
+        "ytick.labelsize": 12,
         "font.family": "sans-serif",
     }
 )
@@ -73,10 +73,10 @@ for sp in ["left", "right", "top", "bottom"]:
 
 # ===================== Layout =====================
 plt.subplots_adjust(
-    left=0.12,
-    right=0.98,
-    bottom=0.17,
-    top=0.96,
+    left=0.17,
+    right=0.97,
+    bottom=0.21,
+    top=0.94,
 )
 
 # ===================== Export =====================
