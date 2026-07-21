@@ -1,0 +1,9 @@
+﻿Metric,Parking,Mall,Campus,Overall
+State recurrence range (%),88.58--91.92,88.34--91.95,88.68--91.90,88.34--91.95
+Mean recurrence (%),90.53,90.23,90.36,90.37
+Max fluctuation (p.p.),3.34,3.61,3.22,3.61
+Path coverage (%),92.60,89.80,91.40,91.27
+Transition coverage (%),95.40,93.70,94.60,94.57
+Intra-state DTW distance,,,,0.270
+Inter-state DTW distance,,,,0.601
+Tail overlap (%),,,,1.67

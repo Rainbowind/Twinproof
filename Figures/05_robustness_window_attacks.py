@@ -18,19 +18,21 @@ series = {
     "Replay": data["Replay"],
     "Proxy": data["Proxy"],
     "Trans.": data["Trans."],
+    "Overall": data["Overall"],
 }
 
 line_styles = {
-    "Forged": {"color": "#4874CB", "linestyle": "-", "marker": "s"},
-    "Replay": {"color": "#EE822F", "linestyle": "--", "marker": "^"},
-    "Proxy": {"color": "#4874CB", "linestyle": "-.", "marker": "D"},
-    "Trans.": {"color": "#EE822F", "linestyle": ":", "marker": "v"},
+    "Forged": {"color": "#2F5FB8", "linestyle": "-", "marker": "s", "linewidth": 0.65},
+    "Replay": {"color": "#4874CB", "linestyle": "--", "marker": "^", "linewidth": 0.65},
+    "Proxy": {"color": "#638ED8", "linestyle": "-.", "marker": "D", "linewidth": 0.65},
+    "Trans.": {"color": "#86AEEA", "linestyle": ":", "marker": "v", "linewidth": 0.75},
+    "Overall": {"color": "#EE822F", "linestyle": "-", "marker": "o", "linewidth": 0.9},
 }
 
 # ===================== Figure size: cm to inch =====================
 cm_to_in = 1 / 2.54
-fig_w = 8.4 * cm_to_in
-fig_h = 5.0 * cm_to_in
+fig_w = 4.1 * cm_to_in
+fig_h = 2.5 * cm_to_in
 
 plt.rcParams.update(
     {
@@ -57,21 +59,21 @@ for label, values in series.items():
         color=style["color"],
         linestyle=style["linestyle"],
         marker=style["marker"],
-        linewidth=0.9,
-        markersize=2.7,
+        linewidth=style["linewidth"],
+        markersize=2.4,
         markerfacecolor="white",
         markeredgecolor=style["color"],
-        markeredgewidth=0.6,
+        markeredgewidth=0.55,
     )
 
 # ===================== Axes =====================
 ax.set_xlabel("Window Length (s)", labelpad=1)
 ax.set_ylabel("FAR (%)", labelpad=1)
 
-ax.set_xlim(1.5, 20.5)
-ax.set_xticks([2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
-ax.set_ylim(0, 8)
-ax.set_yticks([0, 2, 4, 6, 8])
+ax.set_xlim(1.5, 10.5)
+ax.set_xticks([2, 4, 6, 8, 10])
+ax.set_ylim(0, 20)
+ax.set_yticks([0, 5, 10, 15, 20])
 
 ax.tick_params(axis="both", pad=1, width=0.5, length=2)
 
@@ -84,12 +86,11 @@ legend = ax.legend(
     loc="upper right",
     ncol=2,
     frameon=True,
-    borderpad=0.25,
-    handlelength=2.2,
-    handletextpad=0.45,
-    columnspacing=0.8,
-    labelspacing=0.25,
-    bbox_to_anchor=(0.99, 0.99),
+    borderpad=0.18,
+    handlelength=1.5,
+    handletextpad=0.35,
+    columnspacing=0.65,
+    labelspacing=0.2,
 )
 
 frame = legend.get_frame()
@@ -100,10 +101,10 @@ frame.set_linewidth(0.0)
 
 # ===================== Layout =====================
 plt.subplots_adjust(
-    left=0.14,
-    right=0.97,
-    bottom=0.19,
-    top=0.96,
+    left=0.20,
+    right=0.95,
+    bottom=0.22,
+    top=0.95,
 )
 
 # ===================== Export =====================

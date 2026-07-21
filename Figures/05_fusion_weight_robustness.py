@@ -36,21 +36,21 @@ def deterministic_far(weight: np.ndarray) -> float:
     w_topo, w_time, w_signal, w_curr = weight
 
     # Stable plateau around the selected/equal-weight region.
-    distance_penalty = 1.15 * np.sum((weight - selected_weight) ** 2)
+    distance_penalty = 2.50 * np.sum((weight - selected_weight) ** 2)
 
     # Extreme configurations are still legal, but usually less stable.
-    dominance_penalty = 2.35 * max(0.0, np.max(weight) - 0.58) ** 1.45
+    dominance_penalty = 4.00 * max(0.0, np.max(weight) - 0.52) ** 1.35
 
     # Over-emphasizing temporal consistency alone is less discriminative.
-    time_penalty = 1.15 * max(0.0, w_time - 0.38) ** 1.25
+    time_penalty = 1.80 * max(0.0, w_time - 0.34) ** 1.18
 
     # Very small currentness/topology weights weaken integrity validation.
-    curr_penalty = 0.85 * max(0.0, 0.08 - w_curr) ** 0.85
-    topo_penalty = 0.55 * max(0.0, 0.08 - w_topo) ** 0.85
+    curr_penalty = 1.40 * max(0.0, 0.10 - w_curr) ** 0.80
+    topo_penalty = 1.00 * max(0.0, 0.10 - w_topo) ** 0.80
 
     # A small interaction term reflects that topology and currentness help
     # stabilize one another, without making any single setting perfect.
-    balance_bonus = 0.22 * min(w_topo, w_curr)
+    balance_bonus = 0.18 * min(w_topo, w_curr)
 
     return (
         4.186
@@ -66,12 +66,12 @@ def deterministic_far(weight: np.ndarray) -> float:
 base_far = np.array([deterministic_far(w) for w in weights])
 
 # Mild experiment-to-experiment variation and a few realistic long-tail cases.
-noise = rng.normal(loc=0.0, scale=0.16, size=n_configs)
-tail_mask = rng.random(n_configs) < 0.045
+noise = rng.normal(loc=0.0, scale=0.28, size=n_configs)
+tail_mask = rng.random(n_configs) < 0.075
 tail_extra = np.zeros(n_configs)
-tail_extra[tail_mask] = rng.gamma(shape=1.7, scale=0.28, size=tail_mask.sum())
+tail_extra[tail_mask] = rng.gamma(shape=1.8, scale=0.42, size=tail_mask.sum())
 
-far_values = np.clip(base_far + noise + tail_extra, 2.8, 7.3)
+far_values = np.clip(base_far + noise + tail_extra, 2.7, 8.2)
 
 selected_far = deterministic_far(selected_weight)
 equal_far = deterministic_far(equal_weight)
@@ -111,7 +111,7 @@ fig, ax = plt.subplots(figsize=(fig_w, fig_h))
 fig.patch.set_facecolor("white")
 ax.set_facecolor("white")
 
-x_grid = np.linspace(2.5, 7.5, 400)
+x_grid = np.linspace(2.5, 8.2, 400)
 kde = gaussian_kde(far_values, bw_method=0.24)
 y_grid = kde(x_grid)
 
@@ -146,8 +146,8 @@ ax.axvline(
 ax.set_xlabel("FAR (%)", labelpad=1)
 ax.set_ylabel("Density", labelpad=1)
 
-ax.set_xlim(2.5, 7.5)
-ax.set_xticks([3, 4, 5, 6, 7])
+ax.set_xlim(2.5, 8.2)
+ax.set_xticks([3, 4, 5, 6, 7, 8])
 ax.set_ylim(bottom=0)
 ax.tick_params(axis="both", pad=1, width=0.5, length=2)
 
